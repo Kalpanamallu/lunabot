@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Luna – Support Assistant</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --luna-bg:#0A0A1A;
+  --luna-surface:#12122A;
+  --luna-card:#1A1A35;
+  --luna-border:#2A2A50;
+  --luna-accent1:#7C3AED;
+  --luna-accent2:#A855F7;
+  --luna-accent3:#C084FC;
+  --luna-gold:#F59E0B;
+  --luna-green:#22C55E;
+  --luna-text:#F0F0FF;
+  --luna-muted:#8888AA;
+  --luna-chip:#1E1E40;
+  --luna-chip-border:#3A3A60;
+  --luna-user1:#5B21B6;
+  --luna-user2:#7C3AED;
+}
+
+html,body{
+  height:100%;
+  background:var(--luna-bg);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  color:var(--luna-text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+#app{
+  width:430px;
+  height:100vh;
+  max-height:800px;
+  background:var(--luna-bg);
+  border-radius:28px;
+  border:1px solid var(--luna-border);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 0 100px rgba(124,58,237,0.25),0 0 40px rgba(124,58,237,0.1);
+}
+
+/* ── STARS ── */
+#stars-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) var(--delay,0s) infinite alternate;}
+@keyframes twinkle{0%{opacity:0.05}100%{opacity:var(--op,0.6)}}
+
+/* ── HEADER ── */
+#hdr{
+  background:linear-gradient(135deg,#0D0528 0%,#1A0A45 60%,#0D0528 100%);
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  border-bottom:1px solid var(--luna-border);
+  position:relative;
+  overflow:hidden;
+  flex-shrink:0;
+  z-index:10;
+}
+#hdr::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse at 25% 50%,rgba(124,58,237,0.18) 0%,transparent 65%);
+  pointer-events:none;
+}
+#avatar{
+  width:48px;height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#6D28D9,#A855F7,#C084FC);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+  position:relative;
+  box-shadow:0 0 22px rgba(168,85,247,0.45);
+  animation:avatar-glow 3s ease-in-out infinite alternate;
+}
+@keyframes avatar-glow{
+  from{box-shadow:0 0 18px rgba(168,85,247,0.35);}
+  to{box-shadow:0 0 32px rgba(168,85,247,0.65);}
+}
+#avatar::after{
+  content:'';position:absolute;bottom:1px;right:1px;
+  width:12px;height:12px;background:#22C55E;
+  border-radius:50%;border:2.5px solid #0A0A1A;
+  animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
+#hdr-info{flex:1;}
+#hdr-name{font-size:15px;font-weight:700;color:#fff;letter-spacing:0.3px;}
+#hdr-status{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;display:flex;align-items:center;gap:5px;}
+.status-dot{width:6px;height:6px;background:#22C55E;border-radius:50%;animation:pulse-dot 2s infinite;}
+#hdr-btns{display:flex;gap:7px;align-items:center;}
+.hdr-dot{width:12px;height:12px;border-radius:50%;cursor:pointer;transition:filter 0.2s;}
+.hdr-dot:hover{filter:brightness(1.3);}
+
+/* ── CHAT ── */
+#chat{
+  flex:1;overflow-y:auto;
+  padding:14px 13px 8px;
+  display:flex;flex-direction:column;gap:5px;
+  scroll-behavior:smooth;
+  position:relative;z-index:5;
+}
+#chat::-webkit-scrollbar{width:3px;}
+#chat::-webkit-scrollbar-track{background:transparent;}
+#chat::-webkit-scrollbar-thumb{background:var(--luna-border);border-radius:4px;}
+
+.date-pill{text-align:center;margin:6px 0 10px;}
+.date-pill span{
+  background:var(--luna-card);
+  border:1px solid var(--luna-border);
+  color:var(--luna-muted);font-size:10px;
+  padding:3px 14px;border-radius:20px;letter-spacing:0.8px;
+}
+
+/* ── BUBBLES ── */
+.msg-row{display:flex;align-items:flex-end;gap:8px;animation:slide-up 0.28s ease;}
+@keyframes slide-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.bot{flex-direction:row;}
+.msg-row.user{flex-direction:row-reverse;}
+.mini-av{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#6D28D9,#A855F7);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;
+  box-shadow:0 0 10px rgba(168,85,247,0.3);
+}
+.bubble-col{display:flex;flex-direction:column;gap:2px;max-width:275px;}
+.bubble{
+  padding:10px 14px;border-radius:18px;
+  font-size:13.5px;line-height:1.65;word-break:break-word;
+}
+.bot .bubble{
+  background:var(--luna-card);
+  border:1px solid var(--luna-border);
+  border-bottom-left-radius:4px;
+  color:var(--luna-text);
+}
+.user .bubble{
+  background:linear-gradient(135deg,#5B21B6,#7C3AED);
+  border-bottom-right-radius:4px;
+  color:#fff;
+}
+.ts{font-size:10px;color:var(--luna-muted);padding:0 4px;}
+.bot .ts{text-align:left;}
+.user .ts{text-align:right;}
+.ts-check{color:#A855F7;}
+
+/* ── TYPING ── */
+#typing-row{display:none;align-items:flex-end;gap:8px;animation:slide-up 0.28s ease;}
+.typing-bubble{
+  background:var(--luna-card);border:1px solid var(--luna-border);
+  border-radius:18px;border-bottom-left-radius:4px;
+  padding:12px 16px;display:flex;gap:5px;align-items:center;
+}
+.dot{width:7px;height:7px;background:var(--luna-accent3);border-radius:50%;animation:bounce 1.3s infinite;}
+.dot:nth-child(2){animation-delay:.22s;}
+.dot:nth-child(3){animation-delay:.44s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-9px)}}
+
+/* ── CHIPS ── */
+#chips-area{
+  background:var(--luna-surface);
+  border-top:1px solid var(--luna-border);
+  padding:9px 11px;
+  display:flex;flex-wrap:wrap;gap:6px;
+  max-height:135px;overflow-y:auto;
+  flex-shrink:0;z-index:10;
+}
+#chips-area:empty{padding:0;border:none;}
+#chips-area::-webkit-scrollbar{width:3px;}
+#chips-area::-webkit-scrollbar-thumb{background:var(--luna-border);}
+.chip{
+  background:var(--luna-chip);
+  border:1px solid var(--luna-chip-border);
+  color:var(--luna-text);
+  font-size:12px;padding:6px 12px;border-radius:20px;
+  cursor:pointer;transition:all 0.16s;
+  white-space:nowrap;display:flex;align-items:center;gap:5px;
+  font-family:inherit;
+}
+.chip:hover,.chip:active{
+  background:linear-gradient(135deg,#5B21B6,#7C3AED);
+  border-color:#7C3AED;color:#fff;transform:scale(1.04);
+}
+
+/* ── INPUT ── */
+#input-area{
+  background:var(--luna-surface);
+  border-top:1px solid var(--luna-border);
+  padding:11px 13px;display:flex;gap:9px;align-items:center;
+  flex-shrink:0;z-index:10;
+}
+#txt{
+  flex:1;
+  background:var(--luna-card);
+  border:1px solid var(--luna-border);
+  border-radius:22px;padding:10px 16px;
+  color:var(--luna-text);font-size:13.5px;
+  outline:none;font-family:inherit;transition:border-color 0.2s;
+}
+#txt:focus{border-color:var(--luna-accent2);box-shadow:0 0 0 3px rgba(168,85,247,0.12);}
+#txt::placeholder{color:var(--luna-muted);}
+#send-btn{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,#5B21B6,#7C3AED);
+  border:none;color:#fff;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.14s,box-shadow 0.14s;flex-shrink:0;
+  box-shadow:0 0 14px rgba(124,58,237,0.4);
+}
+#send-btn:hover{transform:scale(1.09);box-shadow:0 0 20px rgba(124,58,237,0.6);}
+#send-btn:active{transform:scale(0.92);}
+
+/* ── SPECIAL CARDS ── */
+
+/* Tracker */
+.tracker-card{
+  background:var(--luna-card);border:1px solid var(--luna-border);
+  border-radius:16px;padding:13px 15px;width:100%;max-width:270px;
+}
+.card-title{
+  font-size:10px;color:var(--luna-muted);
+  text-transform:uppercase;letter-spacing:0.7px;margin-bottom:11px;
+}
+.track-step{display:flex;align-items:flex-start;gap:9px;margin-bottom:4px;}
+.step-dot{
+  width:20px;height:20px;border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:10px;margin-top:1px;
+}
+.step-dot.done{background:#22C55E;color:#fff;}
+.step-dot.active{
+  background:#7C3AED;color:#fff;
+  animation:step-pulse 1.6s infinite;
+}
+@keyframes step-pulse{
+  0%,100%{box-shadow:0 0 8px rgba(124,58,237,0.5)}
+  50%{box-shadow:0 0 22px rgba(124,58,237,0.9)}
+}
+.step-dot.pending{background:var(--luna-chip);border:1px solid var(--luna-border);color:var(--luna-muted);}
+.step-label{color:var(--luna-text);font-size:12.5px;}
+.step-label.active-lbl{color:#A855F7;font-weight:600;}
+.step-label.pending-lbl{color:var(--luna-muted);}
+.step-time{color:var(--luna-muted);font-size:11px;margin-top:1px;}
+.track-line{width:2px;height:13px;margin-left:9px;}
+.track-line.done{background:#22C55E;}
+.track-line.pending{background:var(--luna-border);}
+
+/* Map card */
+.map-card{
+  background:var(--luna-card);border:1px solid var(--luna-border);
+  border-radius:16px;overflow:hidden;width:100%;max-width:270px;
+}
+.map-visual{
+  height:88px;
+  background:linear-gradient(135deg,#0A1628,#0D2040);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.map-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.12) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(124,58,237,0.12) 1px,transparent 1px);
+  background-size:22px 22px;
+}
+.map-roads{position:absolute;inset:0;opacity:0.3;}
+.map-pin{font-size:30px;position:relative;z-index:1;animation:pin-bounce 1.1s ease-in-out infinite alternate;}
+@keyframes pin-bounce{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+.map-info{padding:9px 13px;}
+.map-eta{color:#22C55E;font-weight:700;font-size:13px;}
+.map-addr{color:var(--luna-muted);font-size:11px;margin-top:2px;}
+
+/* Promo card */
+.promo-card{
+  background:linear-gradient(135deg,#1A1200,#2A1C00);
+  border:1px solid rgba(245,158,11,0.4);
+  border-radius:16px;padding:13px 15px;width:100%;max-width:270px;
+}
+.promo-label{font-size:11px;color:#FDE68A;margin-bottom:5px;}
+.promo-code{
+  font-size:22px;font-weight:800;color:var(--luna-gold);
+  letter-spacing:3px;margin:4px 0 6px;
+}
+.promo-desc{font-size:11px;color:#92400E;}
+.promo-extra{font-size:11px;color:#A855F7;margin-top:6px;}
+
+/* Agent card */
+.agent-card{
+  background:var(--luna-card);border:1px solid var(--luna-border);
+  border-radius:16px;padding:12px 14px;width:100%;max-width:270px;
+  display:flex;align-items:center;gap:12px;
+}
+.agent-av{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#5B21B6,#A855F7);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.agent-name{font-weight:700;font-size:13px;margin-bottom:2px;}
+.agent-role{color:var(--luna-muted);font-size:11px;}
+.agent-badge{
+  display:inline-block;
+  background:rgba(34,197,94,0.12);
+  border:1px solid rgba(34,197,94,0.3);
+  color:#22C55E;font-size:10px;padding:2px 9px;border-radius:10px;margin-top:4px;
+}
+
+/* Rating card */
+.rating-card{
+  background:linear-gradient(135deg,#1A1200,#2A1C00);
+  border:1px solid rgba(245,158,11,0.35);
+  border-radius:16px;padding:13px 15px;width:100%;max-width:270px;
+}
+.rating-q{font-size:12.5px;color:#FDE68A;font-weight:600;margin-bottom:9px;}
+.stars-row{display:flex;gap:5px;}
+.star-btn{
+  font-size:30px;cursor:pointer;transition:transform 0.12s;
+  color:#78350F;user-select:none;line-height:1;
+}
+.star-btn.lit{color:#F59E0B;}
+.star-btn:hover{transform:scale(1.22);}
+
+/* Invoice card */
+.invoice-card{
+  background:var(--luna-card);border:1px solid var(--luna-border);
+  border-radius:16px;padding:13px 15px;width:100%;max-width:270px;
+}
+.invoice-row{
+  display:flex;justify-content:space-between;
+  font-size:12px;padding:4px 0;border-bottom:1px solid var(--luna-border);
+}
+.invoice-row:last-child{border:none;font-weight:700;color:var(--luna-accent3);}
+.invoice-key{color:var(--luna-muted);}
+
+/* Driver card */
+.driver-card{
+  background:var(--luna-card);border:1px solid var(--luna-border);
+  border-radius:16px;padding:12px 15px;width:100%;max-width:270px;
+}
+.driver-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.driver-av{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,#1D4ED8,#3B82F6);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.driver-name{font-weight:700;font-size:13px;}
+.driver-sub{color:var(--luna-muted);font-size:11px;margin-top:1px;}
+.driver-stat{display:flex;gap:8px;flex-wrap:wrap;}
+.driver-badge{
+  background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);
+  color:var(--luna-accent3);font-size:10px;padding:3px 10px;border-radius:10px;
+}
+
+/* Notification card */
+.notif-card{
+  background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);
+  border-radius:14px;padding:10px 14px;width:100%;max-width:270px;
+  display:flex;align-items:center;gap:10px;font-size:12.5px;
+}
+.notif-icon{font-size:22px;flex-shrink:0;}
+.notif-title{font-weight:600;color:#22C55E;margin-bottom:1px;}
+.notif-sub{color:var(--luna-muted);font-size:11px;}
+
+@media(max-width:440px){
+  #app{width:100vw;height:100dvh;max-height:none;border-radius:0;border:none;}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="stars-bg"></div>
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div id="avatar">🌙</div>
+    <div id="hdr-info">
+      <div id="hdr-name">Luna</div>
+      <div id="hdr-status">
+        <div class="status-dot"></div>
+        <span id="status-text">Online · Always here for you</span>
+      </div>
+    </div>
+    <div id="hdr-btns">
+      <div class="hdr-dot" style="background:#FF5F56;"></div>
+      <div class="hdr-dot" style="background:#FFBD2E;"></div>
+      <div class="hdr-dot" style="background:#27C93F;"></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat">
+    <div class="date-pill"><span>✦ TODAY ✦</span></div>
+    <div id="typing-row">
+      <div class="mini-av">🌙</div>
+      <div class="typing-bubble">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHIPS -->
+  <div id="chips-area"></div>
+
+  <!-- INPUT -->
+  <div id="input-area">
+    <input id="txt" type="text" placeholder="Message Luna…" autocomplete="off"/>
+    <button id="send-btn" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<script>
+/* ─── UTILS ─── */
+const chat      = document.getElementById('chat');
+const chipsArea = document.getElementById('chips-area');
+const txt       = document.getElementById('txt');
+const typingRow = document.getElementById('typing-row');
+const statusTxt = document.getElementById('status-text');
+
+let state      = 'main';
+let ratingDone = false;
+
+/* Stars */
+(function makeStars(){
+  const bg = document.getElementById('stars-bg');
+  for(let i=0;i<50;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random()*2+1;
+    s.style.cssText =
+      `left:${Math.random()*100}%;top:${Math.random()*100}%;`+
+      `width:${sz}px;height:${sz}px;`+
+      `--d:${2+Math.random()*5}s;--delay:${Math.random()*4}s;`+
+      `--op:${0.2+Math.random()*0.6};`;
+    bg.appendChild(s);
+  }
+})();
+
+function nowStr(){
+  const d=new Date(),h=d.getHours(),m=d.getMinutes();
+  const ampm=h<12?'AM':'PM';
+  return `${h%12||12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+function scrollBottom(){ setTimeout(()=>{ chat.scrollTop=chat.scrollHeight; },60); }
+
+/* ─── TYPING INDICATOR ─── */
+function showTyping(show){
+  typingRow.style.display = show ? 'flex' : 'none';
+  statusTxt.textContent   = show ? 'Luna is typing…' : 'Online · Always here for you';
+  if(show) scrollBottom();
+}
+
+/* ─── ADD BOT BUBBLE ─── */
+function addBot(content, delay=1000){
+  return new Promise(resolve=>{
+    showTyping(true);
+    setTimeout(()=>{
+      showTyping(false);
+      const row = document.createElement('div');
+      row.className = 'msg-row bot';
+      const av = document.createElement('div');
+      av.className = 'mini-av'; av.textContent = '🌙';
+      const col = document.createElement('div');
+      col.className = 'bubble-col';
+      if(typeof content === 'string'){
+        const bub = document.createElement('div');
+        bub.className = 'bubble';
+        bub.innerHTML = content.replace(/\n/g,'<br>');
+        col.appendChild(bub);
+      } else {
+        col.appendChild(content);
+      }
+      const ts = document.createElement('div');
+      ts.className = 'ts'; ts.textContent = nowStr();
+      col.appendChild(ts);
+      row.appendChild(av); row.appendChild(col);
+      chat.insertBefore(row, typingRow);
+      scrollBottom();
+      resolve();
+    }, delay);
+  });
+}
+
+/* ─── ADD USER BUBBLE ─── */
+function addUser(text){
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  const col = document.createElement('div');
+  col.className = 'bubble-col';
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.textContent = text;
+  const ts = document.createElement('div');
+  ts.className = 'ts';
+  ts.innerHTML = `${nowStr()} <span class="ts-check">✓✓</span>`;
+  col.appendChild(bub); col.appendChild(ts);
+  row.appendChild(col);
+  chat.insertBefore(row, typingRow);
+  clearChips(); scrollBottom();
+}
+
+/* ─── CHIPS ─── */
+function setChips(chips){
+  chipsArea.innerHTML='';
+  chips.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.innerHTML = `<span>${c.icon||''}</span>${c.label}`;
+    btn.onclick = ()=>{ addUser(c.label); c.action(); };
+    chipsArea.appendChild(btn);
+  });
+}
+function clearChips(){ chipsArea.innerHTML=''; }
+
+/* ─── MAIN MENU ─── */
+function mainMenu(){
+  state='main';
+  setChips([
+    {icon:'📦', label:'Track my order',          action: trackOrder},
+    {icon:'💸', label:'Refund / Return',          action: refundMenu},
+    {icon:'🏠', label:'Change delivery address',  action: changeAddress},
+    {icon:'⚠️', label:'Report a product issue',  action: productIssue},
+    {icon:'💳', label:'Payment & billing',        action: paymentMenu},
+    {icon:'🎁', label:'Offers & promotions',      action: offersMenu},
+    {icon:'🔒', label:'Account & security',       action: accountMenu},
+    {icon:'📱', label:'App & technical help',     action: techMenu},
+    {icon:'🛒', label:'Help placing an order',    action: orderHelp},
+    {icon:'👤', label:'Speak to a human agent',  action: speakAgent},
+  ]);
+}
+
+/* ─── TRACK ORDER ─── */
+function trackOrder(){
+  state='tracking';
+  addBot('On it! Let me pull up your live order status 🔍', 800).then(()=>{
+    // Tracker card
+    const steps=[
+      {label:'Order confirmed',     time:'9:12 AM · Yesterday', status:'done'},
+      {label:'Packed & dispatched', time:'11:45 AM · Yesterday', status:'done'},
+      {label:'Out for delivery',    time:'Today · In transit',   status:'active'},
+      {label:'Expected delivery',   time:'Today · Before 8 PM',  status:'pending'},
+    ];
+    const card = document.createElement('div');
+    card.className='tracker-card';
+    let html=`<div class="card-title">📦 Order #MK-84721 · Live Status</div>`;
+    steps.forEach((s,i)=>{
+      const lblClass = s.status==='active'?'step-label active-lbl':s.status==='pending'?'step-label pending-lbl':'step-label';
+      const sym = s.status==='done'?'✓':s.status==='active'?'▶':'○';
+      html+=`<div class="track-step">
+        <div class="step-dot ${s.status}">${sym}</div>
+        <div><div class="${lblClass}">${s.label}</div><div class="step-time">${s.time}</div></div>
+      </div>`;
+      if(i<steps.length-1) html+=`<div class="track-line ${s.status==='done'?'done':'pending'}"></div>`;
+    });
+    card.innerHTML=html;
+
+    // Map card
+    const mapCard=document.createElement('div');
+    mapCard.className='map-card';
+    mapCard.innerHTML=`
+      <div class="map-visual">
+        <div class="map-grid"></div>
+        <div class="map-pin">📍</div>
+      </div>
+      <div class="map-info">
+        <div class="map-eta">ETA: Today · 7:30 PM ✦</div>
+        <div class="map-addr">Delivering to: Nandyal, Andhra Pradesh</div>
+      </div>`;
+
+    addBot(card, 500).then(()=>
+      addBot(mapCard, 400).then(()=>
+        addBot('Your rider is 3 stops away! You\'ll receive a live tracking SMS shortly 🚀', 600).then(()=>{
+          setChips([
+            {icon:'🔔', label:'Notify me when delivered', action:()=>
+              addBot('Done! You\'ll get a notification the moment it arrives 🎉',700).then(mainMenu)},
+            {icon:'📍', label:'Update delivery address', action: changeAddress},
+            {icon:'🔄', label:'Reschedule delivery',     action: reschedule},
+            {icon:'🏍️', label:'Where is my rider?',      action: driverLocation},
+            {icon:'❌', label:'Cancel order',             action: cancelOrder},
+            {icon:'↩', label:'Main menu',                action: mainMenu},
+          ]);
+        })
+      )
+    );
+  });
+}
+
+function reschedule(){
+  addBot('No problem! Pick a new delivery slot below 📅', 700).then(()=>{
+    setChips([
+      {icon:'🌅', label:'Tomorrow morning (9 AM–12 PM)', action:()=>
+        addBot('Done! Rescheduled to tomorrow morning 9 AM–12 PM ✅\nYou\'ll get a confirmation SMS shortly.',900).then(mainMenu)},
+      {icon:'🌞', label:'Tomorrow afternoon (2–6 PM)', action:()=>
+        addBot('Done! Rescheduled to tomorrow 2–6 PM 📅',900).then(mainMenu)},
+      {icon:'📅', label:'Day after tomorrow', action:()=>
+        addBot('Rescheduled! Our team will call to confirm your preferred slot 🗓',900).then(mainMenu)},
+      {icon:'↩', label:'Back', action: mainMenu},
+    ]);
+  });
+}
+
+function driverLocation(){
+  const card = document.createElement('div');
+  card.className='driver-card';
+  card.innerHTML=`
+    <div class="driver-header">
+      <div class="driver-av">🏍️</div>
+      <div>
+        <div class="driver-name">Ravi Kumar</div>
+        <div class="driver-sub">Hero Splendor · TS 09 AB 1234</div>
+      </div>
+    </div>
+    <div class="driver-stat">
+      <span class="driver-badge">📍 2.4 km away</span>
+      <span class="driver-badge">⏱ ~12 min</span>
+      <span class="driver-badge">⭐ 4.9 rating</span>
+    </div>`;
+  addBot(card, 800).then(()=>{
+    setChips([
+      {icon:'📞', label:'Call rider', action:()=>
+        addBot('Connecting you to Ravi… 📞\n(Demo mode — no actual call placed 😊)',600).then(mainMenu)},
+      {icon:'💬', label:'Message rider', action:()=>
+        addBot('Message sent to Ravi: "Please ring the bell on arrival" 🔔',700).then(mainMenu)},
+      {icon:'↩', label:'Back', action: mainMenu},
+    ]);
+  });
+}
+
+function cancelOrder(){
+  addBot('Are you sure you want to cancel Order #MK-84721? This cannot be undone.', 800).then(()=>{
+    setChips([
+      {icon:'✅', label:'Yes, cancel my order', action:()=>
+        addBot('Order #MK-84721 has been cancelled ✅\nA full refund of ₹1,499 will be credited within 3–5 business days.',1000).then(mainMenu)},
+      {icon:'❌', label:'No, keep my order', action:()=>
+        addBot('Your order is safe! It\'s still on its way to you 🚀',600).then(mainMenu)},
+    ]);
+  });
+}
+
+/* ─── REFUND MENU ─── */
+function refundMenu(){
+  state='refund';
+  addBot('I\'m sorry something went wrong 😔\nLet\'s sort your refund out right away.\n\nWhat\'s the reason?', 900).then(()=>{
+    setChips([
+      {icon:'💥', label:'Product arrived damaged',    action:()=>handleRefund('damaged')},
+      {icon:'👕', label:'Wrong size / colour',        action:()=>handleRefund('size')},
+      {icon:'📦', label:'Item missing from order',   action:()=>handleRefund('missing')},
+      {icon:'🙅', label:'Not as described',           action:()=>handleRefund('described')},
+      {icon:'💰', label:'Found a cheaper price',      action:()=>handleRefund('price')},
+      {icon:'🔄', label:'Changed my mind',            action:()=>handleRefund('mind')},
+      {icon:'🚫', label:'Item never arrived',         action:()=>handleRefund('noshow')},
+      {icon:'↩', label:'Back',                       action: mainMenu},
+    ]);
+  });
+}
+
+function handleRefund(type){
+  const msgs={
+    damaged:  'I sincerely apologise for the damaged product! 😔\n\nI\'ve raised a <b>full refund</b> for Order #MK-84721.\nAmount will be credited within <b>3–5 business days</b>.\nA free return pickup will be scheduled.',
+    size:     'Got it! A <b>free size-exchange</b> has been placed 👕\nCorrect item dispatches in 2 business days with a free doorstep pickup.',
+    missing:  'So sorry a part of your order didn\'t arrive! 📦\nMissing-item complaint raised — resent or <b>full refund within 48 hours</b>.',
+    described:'I understand your frustration 🙏\nA <b>full refund</b> will be processed within 3–5 business days with a free return.',
+    price:    'Great news — our <b>price-match guarantee</b> applies! 🎉\nRefund of ₹249 initiated — reflects in 3–5 business days.',
+    mind:     'No worries! Return request placed. Our courier picks it up in 2 business days and your refund follows.',
+    noshow:   'Completely unacceptable — I deeply apologise! 😟\nMarked as <b>lost shipment</b>. Full refund processed within <b>24 hours</b>.',
+  };
+  state='resolved';
+  addBot(msgs[type], 1100).then(solvedMenu);
+}
+
+/* ─── ADDRESS CHANGE ─── */
+function changeAddress(){
+  state='address';
+  addBot('Sure! How would you like to update your delivery address?', 800).then(()=>{
+    setChips([
+      {icon:'🏠', label:'Use a saved address',   action: savedAddress},
+      {icon:'✍️', label:'Enter a new address',  action:()=>{
+        addBot('Please type your full new address in the box below and tap Send 📝', 700);
+        state='typing-address'; clearChips();
+      }},
+      {icon:'⏰', label:'Reschedule instead',   action: reschedule},
+      {icon:'↩', label:'Back',                  action: mainMenu},
+    ]);
+  });
+}
+
+function savedAddress(){
+  addBot('I found these saved addresses on your account:', 700).then(()=>{
+    setChips([
+      {icon:'🏠', label:'Home – 12 MG Road, Nandyal, AP', action:()=>
+        addBot('Done! Delivery address updated to your Home ✅\nLogistics team notified.',900).then(mainMenu)},
+      {icon:'🏢', label:'Office – 45 Tech Park, Hyderabad', action:()=>
+        addBot('Done! Delivery updated to your Office ✅',900).then(mainMenu)},
+      {icon:'👥', label:'Other – Grandma\'s House, Kurnool', action:()=>
+        addBot('Done! Delivery redirected to Kurnool ✅',900).then(mainMenu)},
+      {icon:'↩', label:'Back', action: changeAddress},
+    ]);
+  });
+}
+
+/* ─── PRODUCT ISSUE ─── */
+function productIssue(){
+  state='product';
+  addBot('I\'m sorry to hear about a product issue! Let\'s fix this fast 🔧\n\nWhat seems to be the problem?', 900).then(()=>{
+    setChips([
+      {icon:'🔌', label:'Won\'t turn on',              action:()=>productFix('power')},
+      {icon:'🔇', label:'No sound / display issue',    action:()=>productFix('av')},
+      {icon:'🔧', label:'Broken or defective part',   action:()=>productFix('broken')},
+      {icon:'🎧', label:'Missing accessories',         action:()=>productFix('accessories')},
+      {icon:'📦', label:'Wrong product delivered',    action:()=>productFix('wrong')},
+      {icon:'🌡️', label:'Overheating',                action:()=>productFix('heat')},
+      {icon:'💻', label:'Software / firmware bug',    action:()=>productFix('software')},
+      {icon:'🔋', label:'Battery draining fast',      action:()=>productFix('battery')},
+      {icon:'↩', label:'Back',                        action: mainMenu},
+    ]);
+  });
+}
+
+function productFix(type){
+  const fixes={
+    power:      'Try holding the power button for 10 seconds to force-restart.\n\nIf that doesn\'t work, I\'ve logged a <b>technical complaint</b> — our expert will call within 24 hours for repair or replacement 🔧',
+    av:         'Try checking connections and restarting. A <b>service request</b> has been raised — expert calls within 24 hours.',
+    broken:     'A broken product is unacceptable! 😟\n\nA <b>free replacement</b> ships within 3 business days with a doorstep pickup for the defective unit.',
+    accessories:'I\'ve placed a request to ship the missing accessories <b>free of charge</b> within 2 business days 🎁',
+    wrong:      'I sincerely apologise for the mix-up! 📦\n\nCorrect item delivered in 3 business days, free pickup for the wrong one — no extra cost.',
+    heat:       '⚠️ Please stop using the device immediately!\n\nA <b>safety complaint</b> has been raised. Our team will call within 4 hours for urgent support.',
+    software:   'A <b>software support ticket</b> has been created. Our tech team will send a fix guide within 2 hours, or call if needed 💻',
+    battery:    'Try a full charge cycle (drain to 0%, charge to 100%). If the issue persists, a <b>battery replacement request</b> has been filed — free service within 5 business days 🔋',
+  };
+  state='resolved';
+  addBot(fixes[type], 1000).then(solvedMenu);
+}
+
+/* ─── PAYMENT & BILLING ─── */
+function paymentMenu(){
+  state='payment';
+  addBot('What payment or billing help do you need? 💳', 800).then(()=>{
+    setChips([
+      {icon:'💸', label:'Failed / duplicate payment',   action: doublePay},
+      {icon:'🧾', label:'Get invoice / receipt',        action: getInvoice},
+      {icon:'🔄', label:'Refund status check',          action: refundStatus},
+      {icon:'💳', label:'Update payment method',        action:()=>
+        addBot('A secure link has been sent to your email to update your payment method 🔐\nLink expires in 30 minutes.',900).then(mainMenu)},
+      {icon:'🎫', label:'Apply coupon / promo code',   action: applyPromo},
+      {icon:'📊', label:'View order history',           action: orderHistory},
+      {icon:'↩', label:'Back',                         action: mainMenu},
+    ]);
+  });
+}
+
+function doublePay(){
+  addBot('I can see a duplicate charge on your account 😟\n\nI\'ve raised a dispute immediately.\nThe duplicate amount will be reversed within <b>2–3 business days</b>.\nReference: REF-DUP-2024-99871', 1000).then(mainMenu);
+}
+
+function getInvoice(){
+  const card=document.createElement('div');
+  card.className='invoice-card';
+  card.innerHTML=`
+    <div class="card-title">🧾 Invoice · Order #MK-84721</div>
+    <div class="invoice-row"><span class="invoice-key">Product</span><span>Wireless Earbuds Pro</span></div>
+    <div class="invoice-row"><span class="invoice-key">Date</span><span>21 May 2026</span></div>
+    <div class="invoice-row"><span class="invoice-key">Payment</span><span>UPI ✓</span></div>
+    <div class="invoice-row"><span class="invoice-key">Subtotal</span><span>₹1,299</span></div>
+    <div class="invoice-row"><span class="invoice-key">Delivery</span><span>₹0 (Free)</span></div>
+    <div class="invoice-row"><span class="invoice-key">Total</span><span>₹1,299</span></div>`;
+  addBot(card, 800).then(()=>
+    addBot('Your invoice has also been emailed to your registered address 📧', 400).then(mainMenu)
+  );
+}
+
+function refundStatus(){
+  const card=document.createElement('div');
+  card.className='notif-card';
+  card.innerHTML=`
+    <div class="notif-icon">💰</div>
+    <div>
+      <div class="notif-title">Refund Processing</div>
+      <div class="notif-sub">₹1,299 · UPI · 3–5 business days<br>Ref: REF-2024-88921</div>
+    </div>`;
+  addBot(card, 800).then(()=>mainMenu());
+}
+
+function orderHistory(){
+  addBot('Here are your recent orders:\n\n📦 <b>#MK-84721</b> — Wireless Earbuds Pro · ₹1,299 · Delivering today\n📦 <b>#MK-79034</b> — Phone Case · ₹299 · Delivered 18 May\n📦 <b>#MK-71208</b> — USB-C Cable · ₹199 · Delivered 10 May\n\nTap any order above for details, or I can help with something specific!', 1000).then(mainMenu);
+}
+
+function applyPromo(){
+  const card=document.createElement('div');
+  card.className='promo-card';
+  card.innerHTML=`
+    <div class="promo-label">✨ Exclusive offer just for you!</div>
+    <div class="promo-code">LUNA20</div>
+    <div class="promo-desc">20% off your next order · Valid for 7 days</div>
+    <div class="promo-extra">🎁 FREESHIP · Free delivery on orders above ₹499</div>`;
+  addBot(card, 800).then(()=>
+    addBot('Use <b>LUNA20</b> at checkout for 20% off! Applied automatically to your cart 🛒', 500).then(mainMenu)
+  );
+}
+
+/* ─── OFFERS ─── */
+function offersMenu(){
+  addBot('🎁 Here are your live exclusive offers!', 700).then(()=>{
+    const card=document.createElement('div');
+    card.className='promo-card';
+    card.innerHTML=`
+      <div class="promo-label">⚡ Flash Sale · Ends in 2h 14m</div>
+      <div class="promo-code">SAVE30</div>
+      <div class="promo-desc" style="margin-bottom:8px;">30% off on all electronics</div>
+      <div class="promo-extra">🚀 FREESHIP · Free delivery on orders above ₹499</div>
+      <div class="promo-extra" style="margin-top:4px;">🎂 BDAY50 · 50% off (birthday special!)</div>`;
+    addBot(card, 500).then(()=>{
+      setChips([
+        {icon:'⚡', label:'Apply SAVE30', action:()=>
+          addBot('SAVE30 applied to your cart! 30% off at checkout 🎉',700).then(mainMenu)},
+        {icon:'🚀', label:'Apply FREESHIP', action:()=>
+          addBot('FREESHIP applied! Free delivery on your next order ✅',700).then(mainMenu)},
+        {icon:'🎂', label:'Apply BDAY50', action:()=>
+          addBot('BDAY50 applied! 50% off — happy shopping! 🎂',700).then(mainMenu)},
+        {icon:'📧', label:'Email me all offers', action:()=>
+          addBot('All current offers sent to your registered email 📧',700).then(mainMenu)},
+        {icon:'↩', label:'Back', action: mainMenu},
+      ]);
+    });
+  });
+}
+
+/* ─── ACCOUNT & SECURITY ─── */
+function accountMenu(){
+  addBot('Your account is in good standing 🛡️\nWhat do you need help with?', 800).then(()=>{
+    setChips([
+      {icon:'🔑', label:'Reset password', action:()=>
+        addBot('A secure password reset link has been sent to your email 📧\nLink expires in 15 minutes 🔐',900).then(mainMenu)},
+      {icon:'📱', label:'Update phone number', action:()=>
+        addBot('An OTP has been sent to your current number. Verify to continue 📲',900).then(mainMenu)},
+      {icon:'📧', label:'Update email address', action:()=>
+        addBot('A verification link has been sent to your new email address 📧\nClick it to confirm the change.',900).then(mainMenu)},
+      {icon:'👁️', label:'Privacy & my data', action:()=>
+        addBot('Your data is stored securely and never sold 🔒\nA full privacy report has been emailed to you.\nYou can request deletion at any time.',900).then(mainMenu)},
+      {icon:'🔔', label:'Notification settings', action:()=>
+        addBot('Notification preferences updated ✅\nFine-tune anytime in App Settings → Notifications 🔔',800).then(mainMenu)},
+      {icon:'🗑️', label:'Delete account', action:()=>
+        addBot('Account deletion is irreversible ⚠️\nA senior agent will contact you within 24 hours to verify and assist.',1000).then(mainMenu)},
+      {icon:'↩', label:'Back', action: mainMenu},
+    ]);
+  });
+}
+
+/* ─── TECH HELP ─── */
+function techMenu(){
+  addBot('Let me help with that technical issue! 📱\nWhat seems to be the problem?', 800).then(()=>{
+    setChips([
+      {icon:'📲', label:'App crashing / freezing', action:()=>
+        addBot('Try clearing the app cache:\nSettings → Apps → Luna → Clear Cache\n\nIf it persists, reinstall the app. A crash log has been sent to our dev team 🛠️',1000).then(mainMenu)},
+      {icon:'🔔', label:'Not receiving notifications', action:()=>
+        addBot('Please check:\n1. Notification permission is ON\n2. Do Not Disturb is OFF\n3. App is not battery-restricted\n\nStill not working? Our team will push a fix within 24 hours 🔔',1000).then(mainMenu)},
+      {icon:'🌐', label:'Website not loading', action:()=>
+        addBot('Our servers are fully operational 🟢\nTry clearing browser cache and cookies, then reload.\nIf the issue persists, I\'ve filed a report for our tech team.',900).then(mainMenu)},
+      {icon:'🔑', label:'Can\'t log in', action:()=>
+        addBot('Try "Forgot Password" on the login screen.\nIf still locked out, our security team will contact you within 1 hour 🔐',900).then(mainMenu)},
+      {icon:'🔄', label:'App not updating', action:()=>
+        addBot('Force-stop the app and open your App Store / Play Store → Search "Luna" → Update.\nIf unavailable, a fresh install will get you the latest version ✅',900).then(mainMenu)},
+      {icon:'↩', label:'Back', action: mainMenu},
+    ]);
+  });
+}
+
+/* ─── ORDER HELP ─── */
+function orderHelp(){
+  addBot('I\'d love to help you place an order! 🛒\nWhat do you need?', 800).then(()=>{
+    setChips([
+      {icon:'🔍', label:'Find a specific product', action:()=>
+        addBot('Search for any product using the search bar on our homepage or browse by category.\nIs there a specific product I can help you locate?',800).then(mainMenu)},
+      {icon:'📊', label:'Check if item is in stock', action:()=>
+        addBot('Most items show live stock on the product page.\nFor out-of-stock items, tap "Notify me" and we\'ll alert you the moment it\'s back 🔔',900).then(mainMenu)},
+      {icon:'🏷️', label:'Bulk / wholesale order', action:()=>
+        addBot('For bulk orders, our B2B team offers special pricing 📦\nA sales executive will call you within 2 hours with a custom quote.',900).then(mainMenu)},
+      {icon:'🎁', label:'Send as a gift', action:()=>
+        addBot('We offer gift wrapping and personalised messages! 🎁\nSelect "Gift options" at checkout. Gift delivery is available across India.',800).then(mainMenu)},
+      {icon:'🔖', label:'Price alert for a product', action:()=>
+        addBot('Price alert set! We\'ll notify you immediately when the price drops on your saved products 📉',700).then(mainMenu)},
+      {icon:'↩', label:'Back', action: mainMenu},
+    ]);
+  });
+}
+
+/* ─── SPEAK TO AGENT ─── */
+function speakAgent(){
+  addBot('Connecting you to one of our top specialists right now 👩‍💼', 700).then(()=>{
+    const card=document.createElement('div');
+    card.className='agent-card';
+    card.innerHTML=`
+      <div class="agent-av">👩‍💼</div>
+      <div>
+        <div class="agent-name">Priya Sharma</div>
+        <div class="agent-role">Senior Support Specialist</div>
+        <div class="agent-badge">● Available · ~2 min wait</div>
+      </div>`;
+    addBot(card, 500).then(()=>{
+      addBot('Priya will call you back on your registered number within <b>2 minutes</b> ✨', 400).then(()=>{
+        setChips([
+          {icon:'📞', label:'Request immediate callback', action:()=>
+            addBot('Callback scheduled! Priya will call you momentarily 📞\nReference: CB-20260522-447',900).then(solvedMenu)},
+          {icon:'💬', label:'I\'ll stick with Luna', action: mainMenu},
+          {icon:'↩', label:'Back', action: mainMenu},
+        ]);
+      });
+    });
+  });
+}
+
+/* ─── SOLVED MENU ─── */
+function solvedMenu(){
+  state='resolved';
+  addBot('Was I able to help you today? 😊', 700).then(()=>{
+    setChips([
+      {icon:'✅', label:'Yes, all sorted! Thank you!', action: showRating},
+      {icon:'❓', label:'I need more help',             action: mainMenu},
+      {icon:'👤', label:'Speak to human agent',        action: speakAgent},
+    ]);
+  });
+}
+
+/* ─── RATING ─── */
+function showRating(){
+  if(ratingDone){ addBot('You\'ve already rated this session. Thank you! 🌟',700).then(mainMenu); return; }
+  ratingDone=true;
+  addBot('Yay! So glad I could help 🎉\nHow would you rate your experience with Luna?', 800).then(()=>{
+    const row=document.createElement('div');
+    row.className='msg-row bot';
+    const av=document.createElement('div');
+    av.className='mini-av'; av.textContent='🌙';
+    const col=document.createElement('div');
+    col.className='bubble-col';
+    const card=document.createElement('div');
+    card.className='rating-card';
+    const q=document.createElement('div');
+    q.className='rating-q'; q.textContent='Rate your experience with Luna ✨';
+    const starsRow=document.createElement('div');
+    starsRow.className='stars-row';
+    const starBtns=[];
+    let chosen=0;
+    for(let i=1;i<=5;i++){
+      const s=document.createElement('span');
+      s.className='star-btn'; s.textContent='☆';
+      const val=i;
+      s.onmouseenter=()=>{ for(let j=0;j<5;j++) starBtns[j].textContent=j<val?'★':'☆'; };
+      s.onmouseleave=()=>{ for(let j=0;j<5;j++){ starBtns[j].textContent=j<chosen?'★':'☆'; starBtns[j].className='star-btn'+(j<chosen?' lit':''); } };
+      s.onclick=()=>{
+        chosen=val;
+        for(let j=0;j<5;j++){ starBtns[j].textContent=j<val?'★':'☆'; starBtns[j].className='star-btn'+(j<val?' lit':''); }
+        setTimeout(()=>{
+          if(row.parentNode) chat.removeChild(row);
+          const msg=val>=4
+            ? `${val===5?'🌟 A perfect 5 stars!':'⭐ Amazing,'} Thank you so much for that ${val}-star rating!\nIt means the universe to me 🌙✨\n\nSee you next time!`
+            : 'Thank you for your honest feedback 🙏\nI\'ll use this to become even better. See you next time!';
+          addBot(msg,700).then(mainMenu);
+        },700);
+      };
+      starBtns.push(s);
+      starsRow.appendChild(s);
+    }
+    card.appendChild(q); card.appendChild(starsRow);
+    const ts=document.createElement('div');
+    ts.className='ts'; ts.textContent=nowStr();
+    col.appendChild(card); col.appendChild(ts);
+    row.appendChild(av); row.appendChild(col);
+    chat.insertBefore(row, typingRow);
+    scrollBottom();
+  });
+}
+
+/* ─── TEXT INPUT HANDLER ─── */
+function handleTypedInput(text){
+  const lo=text.toLowerCase();
+  if(state==='typing-address'){
+    state='resolved';
+    addBot(`Got it! Delivery address updated to:\n\n"${text}"\n\nOur logistics team has been notified 📍\nYou\'ll receive a confirmation SMS shortly.`, 1100).then(solvedMenu);
+    return;
+  }
+  if(lo.includes('track')||lo.includes('order')||lo.includes('delivery')||lo.includes('where')) return trackOrder();
+  if(lo.includes('refund')||lo.includes('return')||lo.includes('money back')) return refundMenu();
+  if(lo.includes('address')||lo.includes('location')||lo.includes('redirect')) return changeAddress();
+  if(lo.includes('pay')||lo.includes('bill')||lo.includes('invoice')||lo.includes('receipt')) return paymentMenu();
+  if(lo.includes('offer')||lo.includes('coupon')||lo.includes('promo')||lo.includes('discount')) return offersMenu();
+  if(lo.includes('account')||lo.includes('password')||lo.includes('login')||lo.includes('security')) return accountMenu();
+  if(lo.includes('agent')||lo.includes('human')||lo.includes('speak')||lo.includes('call')) return speakAgent();
+  if(lo.includes('product')||lo.includes('broken')||lo.includes('issue')||lo.includes('defect')) return productIssue();
+  if(lo.includes('app')||lo.includes('crash')||lo.includes('technical')||lo.includes('bug')) return techMenu();
+  if(lo.includes('thank')||lo.includes('thanks')||lo.includes('thx'))
+    return addBot('You\'re so welcome! 🌙 Always a pleasure helping you.\nAnything else I can do?',800).then(mainMenu);
+  if(lo.includes('hello')||lo.includes('hi')||lo.includes('hey')||lo.includes('help'))
+    return addBot('Hey! 😊 Great to hear from you!\nWhat can I help you with today?',800).then(mainMenu);
+  addBot('Hmm, let me find the right option for you!\nPlease pick from the menu below 😊',800).then(mainMenu);
+}
+
+function sendMsg(){
+  const text=txt.value.trim();
+  if(!text) return;
+  addUser(text);
+  txt.value='';
+  handleTypedInput(text);
+}
+txt.addEventListener('keydown', e=>{ if(e.key==='Enter') sendMsg(); });
+
+/* ─── BOOT ─── */
+setTimeout(()=>{
+  showTyping(true);
+  setTimeout(()=>{
+    showTyping(false);
+    addBot('Hey! 🌙\n\nI\'m <b>Luna</b>, your personal support assistant.\n\nI\'m here 24/7 — track orders, handle refunds, fix product issues, manage payments, and so much more.\n\nHow can I help you today? ✨', 0).then(()=>{
+      mainMenu();
+    });
+  }, 1800);
+}, 300);
+</script>
+</body>
+</html>
